@@ -10,7 +10,7 @@ from db import init_db
 import os
 from fastapi import Request
 from fastapi import Response
-
+from datetime import datetime, timedelta
 from fastapi.responses import Response
 
 import re
@@ -18,7 +18,11 @@ app = FastAPI()
 init_db()
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # React 주소만 허용해도 됨
+    allow_origins=[
+        "http://localhost:3000",
+        "http://localhost:5173",  # Vite 같은 경우
+    ]
+    ,  # React 주소만 허용해도 됨
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -184,7 +188,6 @@ from jose import jwt, JWTError
 
 SECRET_KEY = "mysecretkey"  # 실제론 환경변수로
 ALGORITHM = "HS256"
-
 @app.post("/login")
 async def login_user(data: dict, response: Response):
     username = data.get("username")
@@ -202,14 +205,25 @@ async def login_user(data: dict, response: Response):
     if not pwd_context.verify(password, hashed_pw):
         return {"error": "비밀번호가 틀렸습니다"}
 
-    token = jwt.encode({"username": username}, SECRET_KEY, algorithm=ALGORITHM)
-    response.set_cookie(
+    # ✅ 토큰 만료 시간 설정 (60000ms = 60초)
+    expire = datetime.utcnow() + timedelta(milliseconds=60000)
+    token_payload = {
+        "username": username,
+        "exp": expire  # 👈 여기에 만료 시간 넣기
+    }
+
+    token = jwt.encode(token_payload, SECRET_KEY, algorithm=ALGORITHM)
+
+    res = JSONResponse(content={"message": "로그인 성공"})
+    res.set_cookie(
         key="access_token",
         value=token,
         httponly=True,
         samesite="lax"
     )
-    return {"message": "로그인 성공"}
+    return res
+
+
 @app.get("/me")
 def my_info(request: Request):
     token = request.cookies.get("access_token")
