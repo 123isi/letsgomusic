@@ -18,11 +18,7 @@ app = FastAPI()
 init_db()
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:3000",
-        "http://localhost:5173",
-        "https://letsgomusic-4nbo.vercel.app/",
-    ]
+    allow_origins=["*"]
     ,  # React 주소만 허용해도 됨
     allow_credentials=True,
     allow_methods=["*"],
