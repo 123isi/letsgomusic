@@ -18,13 +18,11 @@ app = FastAPI()
 init_db()
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"]
-    ,  # React 주소만 허용해도 됨
+    allow_origins=["https://letsgomusic-4nbo.vercel.app/"],  # 실제 도메인
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
 @app.get("/melon")
 async def get_melon_chart():
     url = "https://www.melon.com/chart/index.htm"
