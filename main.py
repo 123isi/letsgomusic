@@ -20,7 +20,8 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "http://localhost:3000",
-        "http://localhost:5173",  # Vite 같은 경우
+        "http://localhost:5173",
+        "https://letsgomusic-4nbo.vercel.app/",
     ]
     ,  # React 주소만 허용해도 됨
     allow_credentials=True,
