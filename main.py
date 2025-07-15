@@ -18,7 +18,7 @@ app = FastAPI()
 init_db()
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://letsgomusic-4nbo.vercel.app"],  # 실제 도메인
+    allow_origins=["https://letsgomusic-4nbo.vercel.app","http://localhost:5173"],  # 실제 도메인
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
