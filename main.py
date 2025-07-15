@@ -45,19 +45,41 @@ async def get_melon_chart():
 
     return JSONResponse(content=result)
 
+from subprocess import TimeoutExpired
+
 @app.get("/melon/search")
 def search_youtube(q: str = Query(..., min_length=1)):
     base_dir = os.path.dirname(os.path.abspath(__file__))
     script_path = os.path.join(base_dir, "yt-search.js")
 
-    result = run(["node", script_path, q], stdout=PIPE, stderr=PIPE)
+    try:
+        result = run(
+            ["node", script_path, q],
+            stdout=PIPE,
+            stderr=PIPE,
+            timeout=10  # ⏱️ 10초 제한
+        )
+    except TimeoutExpired:
+        return JSONResponse(status_code=504, content={"error": "검색 시간 초과"})
 
-    if result.returncode != 0:
-        print("Node stderr:", result.stderr.decode())  # 👈 로그 확인
-        return {"error": result.stderr.decode()}
+    stdout = result.stdout.decode().strip()
+    stderr = result.stderr.decode().strip()
 
-    print("Node stdout:", result.stdout.decode())  # 👈 정상 출력도 확인
-    return json.loads(result.stdout)
+    if result.returncode != 0 or not stdout:
+        return JSONResponse(status_code=500, content={
+            "error": "Node.js 실행 실패",
+            "stderr": stderr
+        })
+
+    try:
+        return JSONResponse(content=json.loads(stdout))
+    except Exception as e:
+        return JSONResponse(status_code=500, content={
+            "error": "JSON 파싱 실패",
+            "message": str(e),
+            "raw_output": stdout
+        })
+
 
 @app.get("/playlist")
 async def get_playlist():
