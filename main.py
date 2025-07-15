@@ -36,7 +36,7 @@ async def get_melon_chart():
     artists = [artist.find('a') for artist in soup.select("div.ellipsis.rank02")]
 
     result = []
-    for i in range(min(len(songs), len(artists))):
+    for i in range(min(len(songs), len(artists)),30):
         result.append({
             "rank": i + 1,
             "title": songs[i].get_text(strip=True),
